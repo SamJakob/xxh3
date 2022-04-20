@@ -1,3 +1,7 @@
+## 1.0.0
+
+- First release with full test coverage.
+
 ## 0.0.2+1
 
 - Format package source witb Dart formatter.
