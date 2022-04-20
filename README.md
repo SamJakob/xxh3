@@ -1,4 +1,7 @@
 # dart-xxh3
+
+![Pub Publisher](https://img.shields.io/pub/publisher/xxh3?style=for-the-badge) ![Pub Version](https://img.shields.io/pub/v/xxh3?style=for-the-badge) ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/samjakob/xxh3/Test%20and%20Coverage?style=for-the-badge) ![Codecov](https://img.shields.io/codecov/c/github/SamJakob/xxh3?style=for-the-badge) ![GitHub](https://img.shields.io/github/license/SamJakob/xxh3?style=for-the-badge)
+
 Port of the [XXH3 hashing algorithm](https://github.com/Cyan4973/xxHash/) in
 Dart.
 
