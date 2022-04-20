@@ -13,7 +13,7 @@ jobs:
     steps:
       # Install system dependencies
       - name: Install system dependencies
-        run: apt-get update && apt-get install lcov
+        run: sudo apt-get update && sudo apt-get install lcov
 
       # Check out repository and set up Dart.
       - uses: actions/checkout@v3

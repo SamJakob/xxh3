@@ -4,7 +4,7 @@
 
 ## 0.0.2+1
 
-- Format package source witb Dart formatter.
+- Format package source with Dart formatter.
 
 ## 0.0.2
 
