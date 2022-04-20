@@ -80,7 +80,8 @@ void main() {
       expect(xxh3(stringBytes("hello")), equals(kXXH3helloHash));
     });
 
-    test('(Should fail) Hashing 5 bytes = "hello" and checking invalid value', () {
+    test('(Should fail) Hashing 5 bytes = "hello" and checking invalid value',
+        () {
       expect(xxh3(stringBytes("hello")), isNot(kXXH3helloHashInvalid));
     });
 
@@ -89,7 +90,8 @@ void main() {
     });
 
     test('Hashing 31 bytes = "Howdy, partners! tree mushrooms"', () {
-      expect(xxh3(stringBytes("Howdy, partners! tree mushrooms")), equals(kXXH3_31ByteHash));
+      expect(xxh3(stringBytes("Howdy, partners! tree mushrooms")),
+          equals(kXXH3_31ByteHash));
     });
 
     test('Hashing 130 bytes = (bytes = 0...130)', () {
