@@ -1,0 +1,37 @@
+name: Test and Coverage
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Install system dependencies
+      - name: Install system dependencies
+        run: apt-get update && apt-get install lcov
+
+      # Check out repository and set up Dart.
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1
+
+      # Install Dart dependencies.
+      - name: Install dependencies
+        run: dart pub get
+
+      # Perform static analysis of source.
+      - name: Analyze project source
+        run: dart analyze --fatal-infos
+
+      # Run tests with coverage.
+      - name: Run tests
+        run: ./scripts/tests.sh
+
+      # Upload coverage results to codecov.
+      - uses: codecov/codecov-action@v2
+        with:
+          files: ./coverage/lcov.info
