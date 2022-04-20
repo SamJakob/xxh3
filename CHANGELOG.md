@@ -1,3 +1,7 @@
+## 0.0.2+1
+
+- Format package source witb Dart formatter.
+
 ## 0.0.2
 
 - Fix lints.

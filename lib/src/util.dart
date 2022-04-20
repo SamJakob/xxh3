@@ -55,7 +55,10 @@ int mul128Fold64(int lhs, int rhs) {
 
 /// Swaps the byte order of a 32-bit integer.
 int swap32(int x) {
-  return ((x << 24) & 0xff000000) | ((x << 8) & 0x00ff0000) | ((x >>> 8) & 0x0000ff00) | ((x >>> 24) & 0x000000ff);
+  return ((x << 24) & 0xff000000) |
+      ((x << 8) & 0x00ff0000) |
+      ((x >>> 8) & 0x0000ff00) |
+      ((x >>> 24) & 0x000000ff);
 }
 
 /// Swaps the byte order of a 64-bit integer.

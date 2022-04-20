@@ -1,6 +1,6 @@
 name: xxh3
 description: A Dart implementation (port) of the XXH3 hashing algorithm from xxHash.
-version: 0.0.2
+version: 0.0.2+1
 repository: https://github.com/SamJakob/xxh3
 
 environment:
