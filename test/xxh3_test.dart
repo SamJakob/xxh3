@@ -41,6 +41,23 @@ const kXXH3_250ByteHash = 0x3a07e271a5dab0a3;
 /// Hash of integers from 0 to 255, repeated until 2048 elements is reached.
 const kXXH3_2048ByteHash = 0xdd420471ff96bd00;
 
+/// Hash of "Hello, world!" with a custom secret (all null bytes of min secret
+/// length).
+const kXXH3CustomSecret = 0x7d433b528dca8e34;
+
+/// Hash of "Hello, world!" with a custom seed and default secret.
+const kXXH3CustomSeed = 0x8ec7b6d9d1d4b191;
+
+/// Hash of "Hello, world!" with a custom seed and a custom secret (all null
+/// bytes of min secret length).
+const kXXH3CustomSecretAndSeed = 0x8ec7b6d9d1d4b191;
+
+/// Like [kXXH3CustomSeed] but with a big payload (2048 bytes).
+const kXXH3CustomSeedBigPayload = 0x941f28b00d8c4626;
+
+/// Like [kXXH3CustomSecretAndSeed] but with a big payload (2048 bytes).
+const kXXH3CustomSecretAndSeedBigPayload = 0xef152aac651d7cb1;
+
 // Start tests.
 
 /// UTF-8 encodes the specified string and returns the bytes in a [Uint8List].
@@ -108,6 +125,49 @@ void main() {
 
     test('Hashing 2048 bytes = (bytes = 0...255 - repeated)', () {
       expect(xxh3(rangeBytes(2048)), equals(kXXH3_2048ByteHash));
+    });
+
+    test('Using an invalid secret (too short) throws an error', () {
+      expect(() => xxh3(stringBytes("Hello, world!"), secret: Uint8List(3)),
+          throwsArgumentError);
+    });
+
+    test(
+        'Using an valid secret does not throw an error (and yields correct hash)',
+        () {
+      // This secret is all zeroes. NEVER do this. See xxh3 documentation for
+      // details.
+      final secret = Uint8List(kSecretSizeMin);
+      expect(xxh3(stringBytes("Hello, world!"), secret: secret),
+          equals(kXXH3CustomSecret));
+    });
+
+    test('Using a custom seed yields correct hash', () {
+      expect(xxh3(stringBytes("Hello, world!"), seed: 0x702),
+          equals(kXXH3CustomSeed));
+    });
+
+    test('Using a custom seed with custom secret yields correct hash', () {
+      // This secret is all zeroes. NEVER do this. See xxh3 documentation for
+      // details.
+      final secret = Uint8List(kSecretSizeMin);
+      expect(xxh3(stringBytes("Hello, world!"), secret: secret, seed: 0x702),
+          equals(kXXH3CustomSecretAndSeed));
+    });
+
+    test('Using a custom seed (with a big payload) yields correct hash', () {
+      expect(xxh3(rangeBytes(2048), seed: 0x702),
+          equals(kXXH3CustomSeedBigPayload));
+    });
+
+    test(
+        'Using a custom seed with custom secret (with a big payload) yields correct hash',
+        () {
+      // This secret is all zeroes. NEVER do this. See xxh3 documentation for
+      // details.
+      final secret = Uint8List(kSecretSizeMin);
+      expect(xxh3(rangeBytes(2048), secret: secret, seed: 0x702),
+          equals(kXXH3CustomSecretAndSeedBigPayload));
     });
   });
 }

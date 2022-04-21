@@ -20,6 +20,8 @@ const int kSecretConsumeRate = 8;
 const int kStripeLength = 64;
 const int kAccNB = 8; // = kStripeLength ~/ sizeof(uint64_t)
 
+const int kXXH3MidSizeMax = 240;
+
 /// The default pseudo-random secret value for an XXH3 hash, originally
 /// taken from FARSH.
 final kSecret = Uint8List.fromList([
@@ -96,6 +98,22 @@ void _xXH3Accumulate512(List<int> acc, Uint8List input, Uint8List secret,
 
 /// The default [HashLongFunction] for XXH3.
 int xXH3HashLong64bInternal(Uint8List input, int seed, Uint8List secret) {
+  if (seed == 0) {
+    secret = kSecret;
+  } else if (secret == kSecret) {
+    final kSecretDefaultSize = kSecret.lengthInBytes;
+    final updatedSecret = Uint8List(kSecretDefaultSize);
+    final secretData = ByteData.sublistView(updatedSecret);
+
+    for (int i = 0; i < kSecretDefaultSize; i += 16) {
+      secretData.setUint64(i, readLE64(kSecret, i) + seed, Endian.little);
+      secretData.setUint64(
+          i + 8, readLE64(kSecret, i + 8) - seed, Endian.little);
+    }
+
+    secret = updatedSecret;
+  }
+
   int length = input.lengthInBytes;
   int secretLength = secret.lengthInBytes;
 
@@ -166,23 +184,41 @@ int xXH3_64bitsInternal({
   required Uint8List secret,
   required HashLongFunction hashLongFunction,
 }) {
+  if (secret.lengthInBytes < kSecretSizeMin) {
+    throw ArgumentError.value(
+      secret,
+      'secret',
+      "The specified secret is too short. It must be at least $kSecretSizeMin bytes.",
+    );
+  }
+
   int length = input.lengthInBytes;
+
+  // Refer to XXH3_64bits_withSecretAndSeed, notice that if the seed is not
+  // the default and the length is less than the midSizeMax, a custom secret
+  // will be ignored.
+  if (seed != 0 && length <= kXXH3MidSizeMax && secret != kSecret) {
+    secret = kSecret;
+    // The original source code also specifies hashLong as NULL, I'm assuming
+    // that's because it would never be used with the length being less than
+    // kXXH3MidSizeMax, rather than as a preventative measure.
+  }
 
   if (length == 0) {
     return _xXH64Avalanche(
         seed ^ (readLE64(secret, 56) ^ readLE64(secret, 64)));
   } else if (length < 4) {
-    int keyed = ((((input[0]).toUnsigned(8)).toUnsigned(32) << 16) |
-            (((input[length >>> 1]).toUnsigned(8)).toUnsigned(32) << 24) |
-            input[length - 1].toUnsigned(8) |
-            ((length).toUnsigned(32) << 8)) ^
+    int keyed = ((((input[0])) << 16) |
+            (((input[length >>> 1])) << 24) |
+            input[length - 1] |
+            ((length) << 8)) ^
         ((readLE32(secret) ^ readLE32(secret, 4)) + seed);
 
     return _xXH64Avalanche(keyed);
   } else if (length <= 8) {
     int keyed = (readLE32(input, length - 4) + ((readLE32(input)) << 32)) ^
         ((readLE64(secret, 8) ^ readLE64(secret, 16)) -
-            (seed ^ ((swap32((seed).toUnsigned(32))) << 32)));
+            (seed ^ ((swap32((seed))) << 32)));
     return _xXH3rrmxmx(keyed, length);
   } else if (length <= 16) {
     int inputLo = readLE64(input) ^

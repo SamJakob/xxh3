@@ -3,6 +3,8 @@ To hash a string:
 import 'dart:convert' show utf8;
 import 'dart:typed_data';
 
+import 'package:xxh3/xxh3.dart';
+
 void main() {
 
   // Get the string as UTF-8 bytes.
@@ -24,6 +26,8 @@ Uint8List (byte array), see the following example:
 ```dart
 import 'dart:convert' show utf8;
 import 'dart:typed_data';
+
+import 'package:xxh3/xxh3.dart';
 
 void main() {
 

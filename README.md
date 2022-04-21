@@ -9,6 +9,8 @@ Dart.
 import 'dart:convert' show utf8;
 import 'dart:typed_data';
 
+import 'package:xxh3/xxh3.dart';
+
 void main() {
 
   // Get the string as UTF-8 bytes.
