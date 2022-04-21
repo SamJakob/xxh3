@@ -1,3 +1,8 @@
+## 1.0.1
+
+- Fix bugs with custom seed/secret combinations.
+- Add more tests for custom seeds and payloads of various sizes.
+
 ## 1.0.0
 
 - First release with full test coverage.
