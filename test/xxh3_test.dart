@@ -16,6 +16,9 @@ const kXXH3NullHash = 0xc44bdff4074eecdb;
 /// The result of hashing the string "ye".
 const kXXH3yeHash = 0xd3a409d78a5fe0d3;
 
+/// The result of hashing the string "yes".
+const kXXH3yesHash = 0xbb9db50d5f73a9df;
+
 /// The result of hashing the string "hello".
 const kXXH3helloHash = 0x9555e8555c62dcfd;
 
@@ -89,8 +92,12 @@ void main() {
       expect(xxh3(Uint8List(1)), equals(kXXH3NullHash));
     });
 
-    test('Hashing 3 bytes = "ye"', () {
+    test('Hashing 2 bytes = "ye"', () {
       expect(xxh3(stringBytes("ye")), equals(kXXH3yeHash));
+    });
+
+    test('Hashing 3 bytes = "yes"', () {
+      expect(xxh3(stringBytes("yes")), equals(kXXH3yesHash));
     });
 
     test('Hashing 5 bytes = "hello"', () {
