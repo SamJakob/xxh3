@@ -40,3 +40,14 @@ native code for better performance.
 This uses native integers for performance reasons, so this will not provide
 correct results for Dart web. If there is demand for this, that could probably
 be rectified.
+
+## Development
+
+### Updating the secret
+
+To change the default secret, modify the code in [`tools/generate_secret.dart`](./tools/generate_secret.dart)
+accordingly. Then run the following to write the new secret to the library file:
+
+```bash
+dart tools/generate_secret.dart > ./lib/src/secret.dart
+```

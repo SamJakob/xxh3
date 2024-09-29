@@ -9,7 +9,7 @@ const kSecretSizeMin = 136;
 /// When hashing inputs of length greater than 240, the [HashLongFunction]
 /// is used. The default is [kXXH3HashLongFunction64Bit].
 typedef HashLongFunction = int Function(
-    Uint8List input, int seed, Uint8List secret);
+    ByteData input, int seed, ByteData secret);
 
 /// The default HashLongFunction from xxHash.
 /// See [HashLongFunction].

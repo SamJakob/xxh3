@@ -4,7 +4,7 @@ version: 1.0.1
 repository: https://github.com/SamJakob/xxh3
 
 environment:
-  sdk: '>=2.16.2 <3.0.0'
+  sdk: '>=2.16.2 <4.0.0'
 
 dev_dependencies:
   lints: ^1.0.1

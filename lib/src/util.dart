@@ -26,36 +26,23 @@ int readLE64(ByteData bd, [int byteOffset = 0]) {
 // Math
 //
 
-/// Holds a pair of integers, aims to be analogous to an std::pair in C++.
-/// Used to represent a 128-bit integer.
-class PairInt {
-  int lhs;
-  int rhs;
-  PairInt(this.lhs, this.rhs);
-}
-
-/// Multiplies the 64-bit integers stored in [lhs] and [rhs] (bitwise) and
-/// stores the result in a 128-bit integer in the form of a [PairInt].
-PairInt mult64to128(int lhs, int rhs) {
-  int loLo = lhs.toUnsigned(32) * rhs.toUnsigned(32);
-  int hiLo = (lhs >>> 32) * rhs.toUnsigned(32);
-  int loHi = lhs.toUnsigned(32) * (rhs >>> 32);
-  int hiHi = (lhs >>> 32) * (rhs >>> 32);
-  int cross = (loLo >>> 32) + hiLo.toUnsigned(32) + loHi;
-  int upper = (hiLo >>> 32) + (cross >>> 32) + hiHi;
-  int lower = (cross << 32) | loLo.toUnsigned(32);
-  return PairInt(lower, upper);
-}
-
-/// Multiplies [lhs] and [rhs], bitwise, storing the result in a 128-bit
-/// integer with [mult64to128], then XORs the resulting pair of 64-bit integers
-/// to 'fold' it back into a 64-bit integer.
+/// Multiplies [lhs] and [rhs], bitwise, then XORs the resulting pair of 64-bit
+/// integers (the lower and upper half of the 128-bit output) to 'fold' it back
+/// into a 64-bit integer.
+@pragma('vm:prefer-inline')
 int mul128Fold64(int lhs, int rhs) {
-  final product = mult64to128(lhs, rhs);
-  return product.lhs ^ product.rhs;
+  int loLo = (lhs & 0xFFFFFFFF) * (rhs & 0xFFFFFFFF);
+  int hiLo = (lhs >>> 32) * (rhs & 0xFFFFFFFF);
+  int loHi = (lhs & 0xFFFFFFFF) * (rhs >>> 32);
+  int hiHi = (lhs >>> 32) * (rhs >>> 32);
+  int cross = (loLo >>> 32) + (hiLo & 0xFFFFFFFF) + loHi;
+  int upper = (hiLo >>> 32) + (cross >>> 32) + hiHi;
+  int lower = (cross << 32) | (loLo & 0xFFFFFFFF);
+  return lower ^ upper;
 }
 
 /// Swaps the byte order of a 32-bit integer.
+@pragma('vm:prefer-inline')
 int swap32(int x) {
   return ((x << 24) & 0xff000000) |
       ((x << 8) & 0x00ff0000) |
@@ -64,6 +51,7 @@ int swap32(int x) {
 }
 
 /// Swaps the byte order of a 64-bit integer.
+@pragma('vm:prefer-inline')
 int swap64(int x) {
   return ((x << 56) & 0xff00000000000000) |
       ((x << 40) & 0x00ff000000000000) |

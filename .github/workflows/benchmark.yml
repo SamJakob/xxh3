@@ -1,0 +1,32 @@
+name: Benchmark
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out repository and set up Dart.
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1
+
+      # Install Dart dependencies.
+      - name: Install dependencies
+        run: dart pub get
+
+      # Compile benchmark application
+      - name: Compile benchmark application
+        run: dart compile exe test/xxh3_benchmark.dart -o benchmark
+
+      # Run JIT benchmark
+      - name: Run JIT benchmark
+        run: dart run bin/xxh3_benchmark.dart
+
+      # Run AOT benchmark
+      - name: Run AOT benchmark
+        run: ./benchmark
