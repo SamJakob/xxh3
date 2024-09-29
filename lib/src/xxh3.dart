@@ -76,7 +76,7 @@ int _xXH3rrmxmx(int h, int length) {
 }
 
 /// Dart implementation of the xxh3_mix16b hash function from XXH3.
-int _xXH3Mix16B(Uint8List input, Uint8List secret, int seed,
+int _xXH3Mix16B(ByteData input, ByteData secret, int seed,
     {int inputOffset = 0, int secretOffset = 0}) {
   return mul128Fold64(
     readLE64(input, inputOffset) ^ (readLE64(secret, secretOffset) + seed),
@@ -86,10 +86,10 @@ int _xXH3Mix16B(Uint8List input, Uint8List secret, int seed,
 }
 
 /// Dart implementation of the xxh3_accumulate_512 hash function from XXH3.
-void _xXH3Accumulate512(List<int> acc, Uint8List input, Uint8List secret,
+void _xXH3Accumulate512(Int64List acc, ByteData input, ByteData secret,
     {int inputOffset = 0, int secretOffset = 0}) {
   for (int i = 0; i < kAccNB; i++) {
-    int dataVal = readLE64(input, inputOffset + (8 * i));
+    int dataVal = readLE64(input, inputOffset + (i * 8));
     int dataKey = dataVal ^ readLE64(secret, secretOffset + (i * 8));
     acc[i ^ 1] += dataVal;
     acc[i] += dataKey.toUnsigned(32) * (dataKey >>> 32);
@@ -104,20 +104,24 @@ int xXH3HashLong64bInternal(Uint8List input, int seed, Uint8List secret) {
     final kSecretDefaultSize = kSecret.lengthInBytes;
     final updatedSecret = Uint8List(kSecretDefaultSize);
     final secretData = ByteData.sublistView(updatedSecret);
+    final kSecretBD = ByteData.sublistView(kSecret);
 
     for (int i = 0; i < kSecretDefaultSize; i += 16) {
-      secretData.setUint64(i, readLE64(kSecret, i) + seed, Endian.little);
+      secretData.setUint64(i, readLE64(kSecretBD, i) + seed, Endian.little);
       secretData.setUint64(
-          i + 8, readLE64(kSecret, i + 8) - seed, Endian.little);
+          i + 8, readLE64(kSecretBD, i + 8) - seed, Endian.little);
     }
 
     secret = updatedSecret;
   }
 
-  int length = input.lengthInBytes;
-  int secretLength = secret.lengthInBytes;
+  final inputBD = ByteData.sublistView(input);
+  final secretBD = ByteData.sublistView(secret);
 
-  final acc = [
+  int length = inputBD.lengthInBytes;
+  int secretLength = secretBD.lengthInBytes;
+
+  final acc = Int64List.fromList([
     kXXHPrime32_3,
     kXXHPrime64_1,
     kXXHPrime64_2,
@@ -126,7 +130,7 @@ int xXH3HashLong64bInternal(Uint8List input, int seed, Uint8List secret) {
     kXXHPrime32_2,
     kXXHPrime64_5,
     kXXHPrime32_1
-  ];
+  ]);
   int nbStripesPerBlock = (secretLength - kStripeLength) ~/ kSecretConsumeRate;
   int blockLen = kStripeLength * nbStripesPerBlock;
   int nbBlocks = (length - 1) ~/ blockLen;
@@ -135,8 +139,8 @@ int xXH3HashLong64bInternal(Uint8List input, int seed, Uint8List secret) {
     for (int i = 0; i < nbStripesPerBlock; i++) {
       _xXH3Accumulate512(
         acc,
-        input,
-        secret,
+        inputBD,
+        secretBD,
         inputOffset: n * blockLen + i * kStripeLength,
         secretOffset: i * kSecretConsumeRate,
       );
@@ -145,7 +149,7 @@ int xXH3HashLong64bInternal(Uint8List input, int seed, Uint8List secret) {
     for (int i = 0; i < kAccNB; i++) {
       acc[i] = (acc[i] ^
               (acc[i] >>> 47) ^
-              readLE64(secret, secretLength - kStripeLength + 8 * i)) *
+              readLE64(secretBD, secretLength - kStripeLength + 8 * i)) *
           kXXHPrime32_1;
     }
   }
@@ -154,24 +158,24 @@ int xXH3HashLong64bInternal(Uint8List input, int seed, Uint8List secret) {
   for (int i = 0; i < nbStripes; i++) {
     _xXH3Accumulate512(
       acc,
-      input,
-      secret,
+      inputBD,
+      secretBD,
       inputOffset: nbBlocks * blockLen + i * kStripeLength,
       secretOffset: i * kSecretConsumeRate,
     );
   }
   _xXH3Accumulate512(
     acc,
-    input,
-    secret,
+    inputBD,
+    secretBD,
     inputOffset: length - kStripeLength,
     secretOffset: secretLength - kStripeLength - 7,
   );
   int result = length * kXXHPrime64_1;
   for (int i = 0; i < 4; i++) {
     result += mul128Fold64(
-      acc[2 * i] ^ readLE64(secret, 11 + 16 * i),
-      acc[2 * i + 1] ^ readLE64(secret, 11 + 16 * i + 8),
+      acc[2 * i] ^ readLE64(secretBD, 11 + 16 * i),
+      acc[2 * i + 1] ^ readLE64(secretBD, 11 + 16 * i + 8),
     );
   }
   return _xXH3Avalanche(result);
@@ -204,27 +208,30 @@ int xXH3_64bitsInternal({
     // kXXH3MidSizeMax, rather than as a preventative measure.
   }
 
+  final inputBD = ByteData.sublistView(input);
+  final secretBD = ByteData.sublistView(secret);
+
   if (length == 0) {
     return _xXH64Avalanche(
-        seed ^ (readLE64(secret, 56) ^ readLE64(secret, 64)));
+        seed ^ (readLE64(secretBD, 56) ^ readLE64(secretBD, 64)));
   } else if (length < 4) {
     int keyed = ((((input[0])) << 16) |
             (((input[length >>> 1])) << 24) |
             input[length - 1] |
             ((length) << 8)) ^
-        ((readLE32(secret) ^ readLE32(secret, 4)) + seed);
+        ((readLE32(secretBD) ^ readLE32(secretBD, 4)) + seed);
 
     return _xXH64Avalanche(keyed);
   } else if (length <= 8) {
-    int keyed = (readLE32(input, length - 4) + ((readLE32(input)) << 32)) ^
-        ((readLE64(secret, 8) ^ readLE64(secret, 16)) -
+    int keyed = (readLE32(inputBD, length - 4) + ((readLE32(inputBD)) << 32)) ^
+        ((readLE64(secretBD, 8) ^ readLE64(secretBD, 16)) -
             (seed ^ ((swap32((seed))) << 32)));
     return _xXH3rrmxmx(keyed, length);
   } else if (length <= 16) {
-    int inputLo = readLE64(input) ^
-        ((readLE64(secret, 24) ^ readLE64(secret, 32)) + seed);
-    int inputHi = readLE64(input, length - 8) ^
-        ((readLE64(secret, 40) ^ readLE64(secret, 48)) - seed);
+    int inputLo = readLE64(inputBD) ^
+        ((readLE64(secretBD, 24) ^ readLE64(secretBD, 32)) + seed);
+    int inputHi = readLE64(inputBD, length - 8) ^
+        ((readLE64(secretBD, 40) ^ readLE64(secretBD, 48)) - seed);
     int acc =
         length + swap64(inputLo) + inputHi + mul128Fold64(inputLo, inputHi);
     return _xXH3Avalanche(acc);
@@ -232,9 +239,9 @@ int xXH3_64bitsInternal({
     int acc = length * kXXHPrime64_1;
     int secretOff = 0;
     for (int i = 0, j = length; j > i; i += 16, j -= 16) {
-      acc += _xXH3Mix16B(input, secret, seed,
+      acc += _xXH3Mix16B(inputBD, secretBD, seed,
           inputOffset: i, secretOffset: secretOff);
-      acc += _xXH3Mix16B(input, secret, seed,
+      acc += _xXH3Mix16B(inputBD, secretBD, seed,
           inputOffset: j - 16, secretOffset: secretOff + 16);
       secretOff += 32;
     }
@@ -245,17 +252,17 @@ int xXH3_64bitsInternal({
 
     int i = 0;
     for (; i < 8; ++i) {
-      acc += _xXH3Mix16B(input, secret, seed,
+      acc += _xXH3Mix16B(inputBD, secretBD, seed,
           inputOffset: 16 * i, secretOffset: 16 * i);
     }
     acc = _xXH3Avalanche(acc);
 
     for (; i < nbRounds; ++i) {
-      acc += _xXH3Mix16B(input, secret, seed,
+      acc += _xXH3Mix16B(inputBD, secretBD, seed,
           inputOffset: 16 * i, secretOffset: 16 * (i - 8) + 3);
     }
 
-    acc += _xXH3Mix16B(input, secret, seed,
+    acc += _xXH3Mix16B(inputBD, secretBD, seed,
         inputOffset: length - 16, secretOffset: kSecretSizeMin - 17);
     return _xXH3Avalanche(acc);
   } else {

@@ -8,16 +8,18 @@ import 'dart:typed_data';
 
 /// Reads a 32-bit little-endian integer from the specified buffer at the
 /// specified byte offset. (If unspecified, [byteOffset] is 0 which means the
-// /// value is read from the start of the buffer.)
-int readLE32(Uint8List value, [int byteOffset = 0]) {
-  return ByteData.sublistView(value).getUint32(byteOffset, Endian.little);
+/// value is read from the start of the buffer.)
+@pragma('vm:prefer-inline')
+int readLE32(ByteData bd, [int byteOffset = 0]) {
+  return bd.getUint32(byteOffset, Endian.little);
 }
 
 /// Reads a 64-bit little-endian integer from the specified buffer at the
 /// specified byte offset. (If unspecified, [byteOffset] is 0 which means the
 /// value is read from the start of the buffer.)
-int readLE64(Uint8List value, [int byteOffset = 0]) {
-  return ByteData.sublistView(value).getUint64(byteOffset, Endian.little);
+@pragma('vm:prefer-inline')
+int readLE64(ByteData bd, [int byteOffset = 0]) {
+  return bd.getUint64(byteOffset, Endian.little);
 }
 
 //
@@ -35,7 +37,7 @@ class PairInt {
 /// Multiplies the 64-bit integers stored in [lhs] and [rhs] (bitwise) and
 /// stores the result in a 128-bit integer in the form of a [PairInt].
 PairInt mult64to128(int lhs, int rhs) {
-  int loLo = (lhs.toUnsigned(32) * rhs.toUnsigned(32)).toUnsigned(64);
+  int loLo = lhs.toUnsigned(32) * rhs.toUnsigned(32);
   int hiLo = (lhs >>> 32) * rhs.toUnsigned(32);
   int loHi = lhs.toUnsigned(32) * (rhs >>> 32);
   int hiHi = (lhs >>> 32) * (rhs >>> 32);
