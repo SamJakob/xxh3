@@ -1,6 +1,5 @@
 library xxh3;
 
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:xxh3/src/util.dart';

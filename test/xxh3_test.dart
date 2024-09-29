@@ -64,9 +64,7 @@ const kXXH3CustomSecretAndSeedBigPayload = 0xef152aac651d7cb1;
 // Start tests.
 
 /// UTF-8 encodes the specified string and returns the bytes in a [Uint8List].
-Uint8List stringBytes(String value) {
-  return Uint8List.fromList(utf8.encode(value));
-}
+Uint8List stringBytes(String value) => Uint8List.fromList(utf8.encode(value));
 
 /// Generates a [Uint8List] based on 8-bit integers from 0 to [max].
 /// If [max] exceeds 255 (the 8-bit limit), the values will wrap around.
@@ -175,6 +173,13 @@ void main() {
       final secret = Uint8List(kSecretSizeMin);
       expect(xxh3(rangeBytes(2048), secret: secret, seed: 0x702),
           equals(kXXH3CustomSecretAndSeedBigPayload));
+    });
+  });
+
+  group('xxh3String', () {
+    test('Using xxh3String produces an expected unsigned 64-bit hex value', () {
+      expect(
+          xxh3String(stringBytes("Hello, world!")), equals("f3c34bf11915e869"));
     });
   });
 }

@@ -21,11 +21,11 @@ jobs:
 
       # Compile benchmark application
       - name: Compile benchmark application
-        run: dart compile exe test/xxh3_benchmark.dart -o benchmark
+        run: dart compile exe tool/benchmark.dart -o benchmark
 
       # Run JIT benchmark
       - name: Run JIT benchmark
-        run: dart run bin/xxh3_benchmark.dart
+        run: dart run tool/benchmark.dart
 
       # Run AOT benchmark
       - name: Run AOT benchmark

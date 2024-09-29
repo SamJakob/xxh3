@@ -51,3 +51,18 @@ int xxh3(
     hashLongFunction: hashLongFunction,
   );
 }
+
+/// A convenience wrapper for [xxh3] that returns the result, formatted as an
+/// unsigned hexadecimal string.
+String xxh3String(
+  Uint8List input, {
+  Uint8List? secret,
+  int seed = 0,
+  HashLongFunction hashLongFunction = kXXH3HashLongFunction64Bit,
+}) =>
+    BigInt.from(xxh3(
+      input,
+      secret: secret,
+      seed: seed,
+      hashLongFunction: hashLongFunction,
+    )).toUnsigned(64).toRadixString(16);

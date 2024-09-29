@@ -1,4 +1,4 @@
-# dart-xxh3
+# xxh3 (for Dart)
 
 [![Pub Publisher](https://img.shields.io/pub/publisher/xxh3?style=for-the-badge) ![Pub Version](https://img.shields.io/pub/v/xxh3?style=for-the-badge)](https://pub.dev/packages/xxh3) [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/samjakob/xxh3/test_and_coverage.yml?branch=master&style=for-the-badge)](https://github.com/SamJakob/xxh3/actions/workflows/test_and_coverage.yml) [![Codecov](https://img.shields.io/codecov/c/github/SamJakob/xxh3?style=for-the-badge)](https://app.codecov.io/gh/SamJakob/xxh3) [![MIT License](https://img.shields.io/github/license/SamJakob/xxh3?style=for-the-badge)](https://github.com/SamJakob/xxh3/blob/master/LICENSE)
 
@@ -12,18 +12,22 @@ import 'dart:typed_data';
 import 'package:xxh3/xxh3.dart';
 
 void main() {
-
   // Get the string as UTF-8 bytes.
-  final bytes = utf8.encode("Hello, world!");
+  final helloWorldBytes = utf8.encode("Hello, world!");
   
   // Use XXH3 to hash the byte array (returns an int).
   // XXH3 is a 64-bit hash, so the value is returned in the
   // form of an unsigned 64-bit integer.
-  final int digest = xxh3(Uint8List.fromList(bytes));
-  print(digest);
+  final int digest = xxh3(helloWorldBytes);
+  print(digest); // -881777603154417559
+  
+  // Alternatively, in version 1.1.0+, you can use the
+  // xxh3String convenience method to get a hexadecimal
+  // string representation of the hash.
+  final String hexDigest = xxh3String(helloWorldBytes);
+  print(hexDigest); // f3c34bf11915e869
   
   // See the examples and documentation for more...
-  
 }
 ```
 
@@ -31,23 +35,38 @@ Refer to the [Example tab](https://pub.dev/packages/xxh3/example) for
 a 'quick start guide', or for more details refer to the
 [API Documentation](https://pub.dev/documentation/xxh3/latest/).
 
-As it stands, this is a port written entirely in Dart. It should perform fairly
-well, but I have not benchmarked it as the main goal for this package is to
-have a compatible hash implementation in Dart. If better performance is needed,
-this could probably serve as a fallback and `dart:ffi` could be used to call
-native code for better performance.
+## Performance
 
-This uses native integers for performance reasons, so this will not provide
-correct results for Dart web. If there is demand for this, that could probably
-be rectified.
+As it stands, this is a port written entirely in Dart. At the time of writing
+it has a throughput of ~0.29 ns/byte (3.16 GB/s) on an Apple M-series processor
+in JIT mode or ~0.28 ns/byte (3.23 GB/s) in AOT mode.
 
-## Development
-
-### Updating the secret
-
-To change the default secret, modify the code in [`tools/generate_secret.dart`](./tools/generate_secret.dart)
-accordingly. Then run the following to write the new secret to the library file:
+You can run the benchmarks yourself on your machine with the following commands:
 
 ```bash
-dart tools/generate_secret.dart > ./lib/src/secret.dart
+# For JIT mode
+dart run tool/benchmark.dart
 ```
+
+```bash
+# For AOT mode
+dart compile exe tool/benchmark.dart -o benchmark
+./benchmark
+```
+
+If better performance is needed, `dart:ffi` can be used to call the original
+C implementation. This is not currently implemented in this package, but feel
+free to open a ticket on GitHub if you would like this.
+
+This assumes that the `int` type is a 64-bit integer, so this will likely not
+provide correct results for Dart web (JavaScript), where after 2^53, integers
+become floating point numbers. If there is demand for this, that could probably
+be addressed by using a custom integer type or a JavaScript `Uint8Array`.
+
+WebAssembly could also be a potential workaround, but I have not investigated
+this yet.
+
+## Credits
+
+- Thank you to [@mraleph](https://github.com/mraleph) for the significant (10x)
+  performance improvements introduced by [PR #4](https://github.com/SamJakob/xxh3/pull/4).

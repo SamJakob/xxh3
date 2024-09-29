@@ -8,6 +8,9 @@ build/
 # Build coverage
 coverage/
 
+# Generated files
+benchmark
+
 # Editor directories
 .idea/
 *.iml
