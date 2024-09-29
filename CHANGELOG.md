@@ -1,3 +1,9 @@
+## 1.1.0
+
+- Performance improvements (should be about 10x faster).
+- New `xxh3String` convenience function that outputs the 64-bit hash as an
+  unsigned hexadecimal string.
+
 ## 1.0.1
 
 - Fix bugs with custom seed/secret combinations.
