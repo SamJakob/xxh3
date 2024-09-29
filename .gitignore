@@ -10,6 +10,7 @@ coverage/
 
 # Generated files
 benchmark
+doc/api/
 
 # Editor directories
 .idea/

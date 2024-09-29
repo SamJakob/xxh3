@@ -12,4 +12,5 @@ accordingly. Then run the following to write the new secret to the library file:
 
 ```bash
 dart tool/generate_secret.dart > ./lib/src/secret.dart
+dart format ./lib/src/secret.dart
 ```

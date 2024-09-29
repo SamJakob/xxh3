@@ -65,8 +65,3 @@ be addressed by using a custom integer type or a JavaScript `Uint8Array`.
 
 WebAssembly could also be a potential workaround, but I have not investigated
 this yet.
-
-## Credits
-
-- Thank you to [@mraleph](https://github.com/mraleph) for the significant (10x)
-  performance improvements introduced by [PR #4](https://github.com/SamJakob/xxh3/pull/4).
