@@ -36,16 +36,6 @@ int _xXH64Avalanche(int h) {
   return h ^ (h >>> 32);
 }
 
-/// Dart implementation of the xxh3_avalanche.
-/// A fast avalanche stage for when input bits have been already partially
-/// mixed.
-@pragma('vm:prefer-inline')
-int _xXH3Avalanche(int h) {
-  h ^= h >>> 37;
-  h *= 0x165667919E3779F9;
-  return h ^ (h >>> 32);
-}
-
 /// Dart implementation of the xxh3_rrmxmx.
 /// Based on Pelle Evensen's rrmxmx and preferred when input has not been
 /// mixed.
@@ -67,20 +57,6 @@ int _xXH3Mix16B(ByteData input, ByteData secret, int seed,
   );
 }
 
-/// Dart implementation of the xxh3_accumulate_512 hash function from XXH3.
-void _xXH3Accumulate512(Uint64List acc, ByteData input, ByteData secret,
-    {int inputOffset = 0, int secretOffset = 0}) {
-  int dataVal, dataKey;
-  for (int i = 0; i < kAccNB; i++) {
-    final nextIndex = i * 8;
-    dataVal = readLE64(input, inputOffset + nextIndex);
-    dataKey = dataVal ^ readLE64(secret, secretOffset + nextIndex);
-
-    acc[i ^ 1] += dataVal;
-    acc[i] += (dataKey & 0xFFFFFFFF) * (dataKey >>> 32);
-  }
-}
-
 /// The default [HashLongFunction] for XXH3.
 int xXH3HashLong64bInternal(ByteData input, int seed, ByteData secret) {
   final int length = input.lengthInBytes;
@@ -92,68 +68,40 @@ int xXH3HashLong64bInternal(ByteData input, int seed, ByteData secret) {
     secretLength = kSecretSize;
   } else {
     if (secret == kSecretView) {
-      final seededSecret = ByteData.view(Uint8List(kSecretSize).buffer);
-
-      for (int i = 0; i < kSecretSize; i += 16) {
-        final int nextIndex = i + 8;
-        seededSecret.setUint64(
-            i, readLE64(kSecretView, i) + seed, Endian.little);
-        seededSecret.setUint64(
-            nextIndex, readLE64(kSecretView, nextIndex) - seed, Endian.little);
-      }
-
-      secret = seededSecret;
+      secret = initCustomSecret(seed);
+      secretLength = kSecretSize;
+    } else {
+      secret = ByteData.view(secret.buffer);
+      secretLength = secret.lengthInBytes;
     }
-
-    secret = ByteData.view(secret.buffer);
-    secretLength = secret.lengthInBytes;
   }
 
-  final acc = Uint64List(8);
-  acc[0] = kXXHPrime32_3;
-  acc[1] = kXXHPrime64_1;
-  acc[2] = kXXHPrime64_2;
-  acc[3] = kXXHPrime64_3;
-  acc[4] = kXXHPrime64_4;
-  acc[5] = kXXHPrime32_2;
-  acc[6] = kXXHPrime64_5;
-  acc[7] = kXXHPrime32_1;
-
+  final acc = createAccumulator();
   int nbStripesPerBlock = (secretLength - kStripeLength) ~/ kSecretConsumeRate;
   int blockLen = kStripeLength * nbStripesPerBlock;
   int nbBlocks = (length - 1) ~/ blockLen;
 
   for (int n = 0; n < nbBlocks; n++) {
-    for (int i = 0; i < nbStripesPerBlock; i++) {
-      _xXH3Accumulate512(
-        acc,
-        input,
-        secret,
-        inputOffset: n * blockLen + i * kStripeLength,
-        secretOffset: i * kSecretConsumeRate,
-      );
-    }
-
-    for (int i = 0; i < kAccNB; i++) {
-      final accI = acc[i];
-      acc[i] = (accI ^
-              (accI >>> 47) ^
-              readLE64(secret, secretLength - kStripeLength + 8 * i)) *
-          kXXHPrime32_1;
-    }
-  }
-
-  int nbStripes = ((length - 1) - (blockLen * nbBlocks)) ~/ kStripeLength;
-  for (int i = 0; i < nbStripes; i++) {
-    _xXH3Accumulate512(
+    accumulate(
       acc,
       input,
       secret,
-      inputOffset: nbBlocks * blockLen + i * kStripeLength,
-      secretOffset: i * kSecretConsumeRate,
+      inputOffset: n * blockLen,
+      stripes: nbStripesPerBlock,
     );
+    scrambleAccumulator(acc, secret);
   }
-  _xXH3Accumulate512(
+
+  int nbStripes = ((length - 1) - (blockLen * nbBlocks)) ~/ kStripeLength;
+  accumulate(
+    acc,
+    input,
+    secret,
+    inputOffset: nbBlocks * blockLen,
+    stripes: nbStripes,
+  );
+
+  accumulate512(
     acc,
     input,
     secret,
@@ -170,7 +118,7 @@ int xXH3HashLong64bInternal(ByteData input, int seed, ByteData secret) {
       acc[accOffset + 1] ^ readLE64(secret, secretOffset + 8),
     );
   }
-  return _xXH3Avalanche(result);
+  return xXH3Avalanche(result);
 }
 
 /// The internal entry point for the 64-bit variant of the XXH3 hash.
@@ -180,13 +128,7 @@ int xXH3_64bitsInternal({
   required Uint8List secret,
   required HashLongFunction hashLongFunction,
 }) {
-  if (secret.lengthInBytes < kSecretSizeMin) {
-    throw ArgumentError.value(
-      secret,
-      'secret',
-      "The specified secret is too short. It must be at least $kSecretSizeMin bytes.",
-    );
-  }
+  validateSecret(secret);
 
   final inputView = ByteData.view(input.buffer);
   int length = input.lengthInBytes;
@@ -232,7 +174,7 @@ int xXH3_64bitsInternal({
         ((readLE64(secretView, 40) ^ readLE64(secretView, 48)) - seed);
     int acc =
         length + swap64(inputLo) + inputHi + mul128Fold64(inputLo, inputHi);
-    return _xXH3Avalanche(acc);
+    return xXH3Avalanche(acc);
   } else if (length <= 128) {
     int acc = length * kXXHPrime64_1;
     int secretOff = 0;
@@ -243,7 +185,7 @@ int xXH3_64bitsInternal({
           inputOffset: j - 16, secretOffset: secretOff + 16);
       secretOff += 32;
     }
-    return _xXH3Avalanche(acc);
+    return xXH3Avalanche(acc);
   } else {
     // length <= 240
     int acc = length * kXXHPrime64_1;
@@ -254,7 +196,7 @@ int xXH3_64bitsInternal({
       acc += _xXH3Mix16B(inputView, secretView, seed,
           inputOffset: 16 * i, secretOffset: 16 * i);
     }
-    acc = _xXH3Avalanche(acc);
+    acc = xXH3Avalanche(acc);
 
     for (; i < nbRounds; ++i) {
       acc += _xXH3Mix16B(inputView, secretView, seed,
@@ -263,6 +205,6 @@ int xXH3_64bitsInternal({
 
     acc += _xXH3Mix16B(inputView, secretView, seed,
         inputOffset: length - 16, secretOffset: kSecretSizeMin - 17);
-    return _xXH3Avalanche(acc);
+    return xXH3Avalanche(acc);
   }
 }

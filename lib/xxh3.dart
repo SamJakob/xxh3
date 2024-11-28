@@ -1,10 +1,17 @@
 import 'dart:typed_data';
 
+import 'package:xxh3/src/stream.dart';
 import 'package:xxh3/src/xxh3.dart';
+
+export 'package:xxh3/src/stream.dart' show XXH3State;
 
 /// The bare minimum size for a custom secret as defined in XXH3.
 /// See https://github.com/Cyan4973/xxHash/blob/b1a61dff654af43552b5ee05c737b6fd2a0ee14b/xxhash.h#L931
 const kSecretSizeMin = 136;
+
+/// The optimal update size for incremental hashing. This size is used in the
+/// internal [XXH3State] when calling [XXH3State.update].
+const int kXXH3BufferSize = 256;
 
 /// When hashing inputs of length greater than 240, the [HashLongFunction]
 /// is used. The default is [kXXH3HashLongFunction64Bit].
@@ -66,3 +73,7 @@ String xxh3String(
       seed: seed,
       hashLongFunction: hashLongFunction,
     )).toUnsigned(64).toRadixString(16);
+
+// TODO: documentation
+XXH3State xxh3Stream({Uint8List? secret, int? seed}) =>
+    XXH3State.create(secret: secret, seed: seed);

@@ -1,11 +1,11 @@
 name: xxh3
 description: A Dart implementation (port) of the XXH3 hashing algorithm from xxHash.
-version: 1.1.0
+version: 1.2.0
 repository: https://github.com/SamJakob/xxh3
 
 environment:
   sdk: '>=2.16.2 <4.0.0'
 
 dev_dependencies:
-  lints: ^1.0.1
-  test: ^1.21.4
+  lints: ^5.0.0
+  test: ^1.25.9
