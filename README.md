@@ -51,6 +51,9 @@ As it stands, this is a port written entirely in Dart. At the time of writing
 it has a throughput of ~0.29 ns/byte (3.16 GB/s) on an Apple M-series processor
 in JIT mode or ~0.28 ns/byte (3.23 GB/s) in AOT mode.
 
+The streaming APIs currently have no further optimization and are therefore
+about 0.4-0.6ns/byte slower than the buffered APIs.
+
 You can run the benchmarks yourself on your machine with the following commands:
 
 ```bash
