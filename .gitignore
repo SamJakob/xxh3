@@ -10,6 +10,7 @@ coverage/
 
 # Generated files
 benchmark
+benchmark_stream
 doc/api/
 
 # Editor directories
