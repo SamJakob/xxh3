@@ -29,7 +29,7 @@ jobs:
 
       # Run tests with coverage.
       - name: Run tests
-        run: ./scripts/tests.sh
+        run: ./scripts/test
 
       # Upload coverage results to codecov.
       - uses: codecov/codecov-action@v2

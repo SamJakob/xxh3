@@ -1,0 +1,14 @@
+dartdoc:
+  categories:
+    "Buffer API":
+      markdown: doc/buffer_api.md
+    "Stream API":
+      markdown: doc/stream_api.md
+  categoryOrder: ["Buffer API", "Stream API"]
+  linkToSource:
+    root: '.'
+    uriTemplate: https://github.com/SamJakob/xxh3/blob/%r%/%f%#L%l%
+  errors:
+    - broken-link
+    - category-order-gives-missing-package-name
+    - deprecated

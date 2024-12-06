@@ -5,6 +5,9 @@
 Port of the [XXH3 hashing algorithm](https://github.com/Cyan4973/xxHash/) in
 Dart.
 
+Presently, only the 64-bit version of XXH3 (XXH3-64) is supported.
+Please feel free to [open a GitHub issue](https://github.com/SamJakob/xxh3/issues/new) if you need support for XXH3-128.
+
 ```dart
 import 'dart:convert' show utf8;
 import 'dart:typed_data';
@@ -17,7 +20,7 @@ void main() {
   
   // Use XXH3 to hash the byte array (returns an int).
   // XXH3 is a 64-bit hash, so the value is returned in the
-  // form of an unsigned 64-bit integer.
+  // form of a 64-bit integer.
   final int digest = xxh3(helloWorldBytes);
   print(digest); // -881777603154417559
   
@@ -26,6 +29,13 @@ void main() {
   // string representation of the hash.
   final String hexDigest = xxh3String(helloWorldBytes);
   print(hexDigest); // f3c34bf11915e869
+
+  // Similarly, in version 1.2.0+, you can use the
+  // stream API to process your data in blocks.
+  final hashStream = xxh3Stream();
+  hashStream.update(helloWorldBytes);
+  print(hashStream.digest()); // -881777603154417559
+  print(hashStream.digestString()); // f3c34bf11915e869
   
   // See the examples and documentation for more...
 }
@@ -40,6 +50,9 @@ a 'quick start guide', or for more details refer to the
 As it stands, this is a port written entirely in Dart. At the time of writing
 it has a throughput of ~0.29 ns/byte (3.16 GB/s) on an Apple M-series processor
 in JIT mode or ~0.28 ns/byte (3.23 GB/s) in AOT mode.
+
+The streaming APIs currently have no further optimization and are therefore
+about 0.4-0.6ns/byte slower than the buffered APIs.
 
 You can run the benchmarks yourself on your machine with the following commands:
 

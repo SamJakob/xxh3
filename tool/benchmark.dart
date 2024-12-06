@@ -7,7 +7,7 @@ const kBatchSize = 100;
 const kDataSize = 64 * 1024;
 
 void main() {
-  final args = [];
+  final args = <String>[];
 
   final bytes =
       args.isEmpty ? Uint8List(kDataSize) : File(args.first).readAsBytesSync();
@@ -15,9 +15,9 @@ void main() {
   final batchResults = <double>[];
 
   for (var j = 0; j < kBatchSize; j++) {
-    print('== Batch ${j + 1} of $kBatchSize ==');
+    stdout.writeln('== Batch ${j + 1} of $kBatchSize ==');
 
-    final N = 5000;
+    const N = 5000;
     final sw = Stopwatch()..start();
     for (var i = 0; i < N; i++) {
       xxh3(bytes);
@@ -27,19 +27,20 @@ void main() {
     final nsPerByte = nsPerIteration / bytes.lengthInBytes;
     batchResults.add(nsPerByte);
 
-    print('  -> $nsPerByte ns/byte');
+    stdout.writeln('  -> $nsPerByte ns/byte');
   }
 
-  print('');
-  print('== Summary ==');
+  stdout
+    ..writeln('')
+    ..writeln('== Summary ==')
+    ..writeln('Data size: $kDataSize bytes');
 
-  print('Data size: $kDataSize bytes');
-
-  final averageNsPerByte = batchResults.reduce((a, b) => a + b) / kBatchSize;
-  print('Average: $averageNsPerByte ns/byte');
+  final averageNsPerByte =
+      batchResults.reduce((final a, final b) => a + b) / kBatchSize;
+  stdout.writeln('Average: $averageNsPerByte ns/byte');
 
   final nsPerGB = averageNsPerByte * 1024 * 1024 * 1024; // kB -> mB -> GB
   final gigabytesPerNs = 1 / nsPerGB;
   final gigabytesPerSecond = gigabytesPerNs * 1e9;
-  print('Average: ${gigabytesPerSecond.toStringAsFixed(2)} GB/s');
+  stdout.writeln('Average: ${gigabytesPerSecond.toStringAsFixed(2)} GB/s');
 }

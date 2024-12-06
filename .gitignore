@@ -16,3 +16,4 @@ doc/api/
 .idea/
 *.iml
 .vscode/
+.DS_Store

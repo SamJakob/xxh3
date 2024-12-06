@@ -1,1 +1,144 @@
 include: package:lints/recommended.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    invalid_use_of_protected_member: error
+    invalid_override_of_non_virtual_member: error
+    invalid_annotation_target: ignore
+  exclude:
+    - example/**.dart
+
+linter:
+  rules:
+    document_ignores: true
+
+    avoid_dynamic_calls: true
+    avoid_print: true
+    always_use_package_imports: true
+    prefer_relative_imports: false
+    avoid_type_to_string: true
+    cancel_subscriptions: true
+    cascade_invocations: true
+    close_sinks: true
+    comment_references: true
+    dangling_library_doc_comments: true
+    deprecated_member_use_from_same_package: true
+    flutter_style_todos: true
+    join_return_with_assignment: true
+    no_self_assignments: true
+    prefer_final_parameters: true
+    prefer_final_fields: true
+    prefer_final_in_for_each: true
+    prefer_final_locals: true
+    unnecessary_await_in_return: true
+    unnecessary_statements: true
+    use_super_parameters: true
+
+    # Potentially unnecessary or confusing (the 'unawaited' concept is not necessarily well known to other developers
+    # or to all Dart developers) and the semantics of unawaited are not always clear.
+    #
+    # That said, this is a useful rule to have enabled, so we can catch cases where we do want to await a future and
+    # so that there is an explicit decision to not await a future.
+    unawaited_futures: true
+    discarded_futures: true
+
+    # Dart 3.0 prevents fall-through of non-empty switch cases.
+    # Dart 2.19 and lower require explicit breaks (and this rule is not enforced for those versions).
+    unnecessary_breaks: true
+
+    always_declare_return_types: true
+    always_put_required_named_parameters_first: true
+    annotate_redeclares: true
+    avoid_annotating_with_dynamic: true
+    avoid_multiple_declarations_per_line: true
+    avoid_returning_this: true
+    avoid_slow_async_io: true
+    avoid_void_async: true
+    combinators_ordering: true
+    conditional_uri_does_not_exist: true
+    deprecated_consistency: true
+    provide_deprecation_message: true
+    diagnostic_describe_all_properties: true
+    directives_ordering: true
+    eol_at_end_of_file: true
+    implicit_reopen: true
+    invalid_case_patterns: true
+    library_names: true
+    literal_only_boolean_expressions: true
+    matching_super_parameters: true
+    missing_code_block_language_in_doc_comment: true
+    missing_whitespace_between_adjacent_strings: true
+    no_adjacent_strings_in_list: true
+
+    no_literal_bool_comparisons: true
+    no_runtimeType_toString: true
+    noop_primitive_operations: true
+
+    one_member_abstracts: true
+    only_throw_errors: true
+    package_prefixed_library_names: true
+
+    prefer_asserts_in_initializer_lists: true
+    prefer_asserts_with_message: true
+    prefer_const_constructors: true
+    prefer_const_constructors_in_immutables: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
+    prefer_constructors_over_static_methods: true
+    prefer_expression_function_bodies: true
+    prefer_if_elements_to_conditional_expressions: true
+    prefer_int_literals: true
+    prefer_mixin: true
+    prefer_null_aware_method_calls: true
+    prefer_single_quotes: true
+    prefer_void_to_null: true
+    public_member_api_docs: true
+    require_trailing_commas: true
+    sort_unnamed_constructors_first: true
+    test_types_in_equals: true
+    tighten_type_of_initializing_formals: true
+    unnecessary_lambdas: true
+    unnecessary_library_directive: true
+    unnecessary_null_aware_operator_on_extension_on_nullable: true
+    unnecessary_null_checks: true
+
+    # This is a good implementation of this rule.
+    #   > "The goal is not to force all developers to maintain the expression precedence table
+    #      in their heads"
+    #
+    # So it should only capture truly unnecessary use of parenthesis.
+    unnecessary_parenthesis: true
+
+    unnecessary_raw_strings: true
+    use_enums: true
+    use_if_null_to_convert_nulls_to_bools: true
+    use_is_even_rather_than_modulo: true
+    use_late_for_private_fields_and_variables: true
+    use_named_constants: true
+    use_raw_strings: true
+    use_setters_to_change_properties: true
+    use_string_buffers: true
+    use_test_throws_matchers: true
+    use_to_and_as_if_applicable: true
+
+    # EXPERIMENTAL
+    # Disabled until performance is checked.
+    # parameter_assignments: true
+
+    # EXPERIMENTAL
+    # Don't use the 'default' clause in a switch/case statement.
+    # Instead, define the fallback behavior outside the switch statement.
+    no_default_cases: true
+
+    # TODO (when this library is updated to Dart 3).
+    # unnecessary_library_name: true
+
+    # TODO (when Dart 3.6 is released).
+    # specify_nonobvious_local_variable_types: true
+    # omit_obvious_local_variable_types: true
+    # omit_obvious_property_types: true
+    # use_truncating_division: true

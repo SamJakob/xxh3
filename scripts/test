@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+# Resolve the directory of the script
+SCRIPTS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_DIR="$(realpath "$SCRIPTS_DIR"/..)"
+cd "$PROJECT_DIR"
+
+set -exu
+
+if [ -d ./coverage ]; then
+  echo "Coverage directory exists. Removing..."
+  rm -r ./coverage
+fi
+
+# Run dart tests with coverage
+dart run test --coverage=./coverage
+
+# Ensure coverage package is activated.
+dart pub global activate coverage
+
+# Format lib/ coverage data in lcov format.
+dart pub global run coverage:format_coverage --report-on=lib --lcov -o ./coverage/lcov.info -i ./coverage
+
+# Generate LCOV report.
+genhtml -o ./coverage/report ./coverage/lcov.info | tee ./coverage/genhtml.log
+
+{ set +x; } 2> /dev/null
+
+COVERAGE_PERCENTAGE=$(< ./coverage/genhtml.log tr -d '\n' | sed -r 's/^.*lines\.+: (([0-9]+)\.[0-9])%.*$/\2/g')
+echo ""
+
+# Ensure coverage is 100%.
+# Apparently the easiest way to work with the total coverage in LCOV is to just parse
+# the output of genhtml...?
+if [[ $COVERAGE_PERCENTAGE -lt 100 ]]; then
+  printf "\e[0;101m\e[1;97m⚠️ Insufficient coverage! \e[0m\n"
+fi
+
+echo "Coverage Percentage: $COVERAGE_PERCENTAGE%"
