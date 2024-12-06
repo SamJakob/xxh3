@@ -5,6 +5,9 @@
 Port of the [XXH3 hashing algorithm](https://github.com/Cyan4973/xxHash/) in
 Dart.
 
+Presently, only the 64-bit version of XXH3 (XXH3-64) is supported.
+Please feel free to [open a GitHub issue](https://github.com/SamJakob/xxh3/issues/new) if you need support for XXH3-128.
+
 ```dart
 import 'dart:convert' show utf8;
 import 'dart:typed_data';
@@ -17,7 +20,7 @@ void main() {
   
   // Use XXH3 to hash the byte array (returns an int).
   // XXH3 is a 64-bit hash, so the value is returned in the
-  // form of an unsigned 64-bit integer.
+  // form of a 64-bit integer.
   final int digest = xxh3(helloWorldBytes);
   print(digest); // -881777603154417559
   
@@ -28,11 +31,11 @@ void main() {
   print(hexDigest); // f3c34bf11915e869
 
   // Similarly, in version 1.2.0+, you can use the
-  // streaming API to process your data in blocks.
+  // stream API to process your data in blocks.
   final hashStream = xxh3Stream();
   hashStream.update(helloWorldBytes);
-  print(hashStream.digest());
-  print(hashStream.digestString());
+  print(hashStream.digest()); // -881777603154417559
+  print(hashStream.digestString()); // f3c34bf11915e869
   
   // See the examples and documentation for more...
 }

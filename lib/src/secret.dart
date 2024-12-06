@@ -2,14 +2,14 @@
 // Do not modify this file by hand as changes will be lost!
 // See doc/xxh3_secret.md for details.
 
-part of 'xxh3.dart';
+import 'dart:typed_data';
 
-/// The length of the default secret ([kSecret]), in bytes.
+/// The length of the default secret ([_kSecret]), in bytes.
 const kSecretSize = 192;
 
 /// The default pseudo-random secret value for an XXH3 hash, originally
 /// taken from FARSH.
-final kSecret = (() {
+final _kSecret = (() {
   final secret = Uint8List(192);
   secret[0] = 0xb8;
   secret[1] = 0xfe;
@@ -206,4 +206,5 @@ final kSecret = (() {
   return secret;
 })();
 
-final kSecretView = ByteData.view(kSecret.buffer);
+/// A [ByteData.view] of the [_kSecret] buffer.
+final kSecretView = ByteData.view(_kSecret.buffer);

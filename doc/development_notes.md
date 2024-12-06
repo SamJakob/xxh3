@@ -1,4 +1,6 @@
-# Updating the default XXH3 secret
+# Package development notes
+
+## Updating the default XXH3 secret file (`lib/src/secret.dart`)
 
 The default secret used by the XXH3 algorithm is defined in [`tool/generate_secret.dart`](/tool/generate_secret.dart)
 which, when executed, generates [`lib/src/secret.dart`](/lib/src/secret.dart).
