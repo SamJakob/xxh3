@@ -1,3 +1,9 @@
+## 1.2.0
+
+- Improved documentation.
+- Added `xxh3Stream` API to allow hashing data streamed in chunks.
+- Internal refactoring.
+
 ## 1.1.0
 
 - Performance improvements (should be about 10x faster).
